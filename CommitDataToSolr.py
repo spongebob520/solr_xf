@@ -5,51 +5,45 @@ import pysolr
 
 
 # txt文档为结构化文档，只有两列和四列的区分，当列数为其他情况时候，不做处理
-def add_txt(files_path)
-    solr = pysolr.Solr('http://localhost:8983/solr/' + 'gettingstarted_shard1_replica2')
+def add_txt(files_path, core):
+	core.delete(q='path:' + os.path.abspath(files_path))
+	dicts = []
     with open(files_path, 'rb') as f:
-        dicts = []
-        for line in f:
-            words = line.strip().split()
-            #引入全路径作为该文件的标识，该文件中所有行共用这一个标识，方便之后删除索引操作
-            words.append(os.path.abspath(files_path))
-            if len(words == 5):
-                fields = ('wav', 'start', 'end', 'text', 'path')
-            elif len(words == 3)：
-                fields = ('start', 'end', 'path')
-            else:
-                print 'ERROR!' + files_path + 'is not the correct format!'
-                break
-
+        for i, line in enumerate(f):
+            words = [s.decode('utf-8') for s in line.strip().split()]
+            if i == 0:
+            	if len(words == 4):
+                	fields = ('wav', 'start', 'end', 'text', 'path')
+            	elif len(words == 2)：
+                	fields = ('start', 'end', 'path')
+            	else:
+                	print 'ERROR!' + files_path + 'is not the correct format!'
+			words.append(os.path.abspath(files_path))
             dicts.append(dict(zip(fields, words)))
 
-        solr.add(dicts)
+        core.add(dicts)
 
 
-def add_info(files_path):
-    solr = pysolr.Solr('http://localhost:8983/solr/' + 'gettingstarted_shard1_replica2')
+def add_info(files_path, core):
+	core.delete(q='path:' + os.path.abspath(files_path))
     with open(files_path, 'rb') as f:
         dicts = []
-        i = 0
-        for line in f:
-            words = line.strip().split()
-            # 引入全路径作为该文件的标识，该文件中所有行共用这一个标识，方便之后删除该文件内左右索引
-            words.append(os.path.abspath(files_path))
+        for i, line in enumerate(f):
+            words = [s.decode('utf-8') for s in line.strip().split()]
             if i == 0:
-                fields = words
+                fields = words[:]
+				fields.extend([u'path', u'content'])
             else:
+				words.extend([os.path.abspath(filename).decode('utf-8'), line.decode('utf-8')])
                 dicts.append(dict(zip(fields, words)))
-            i += 1
-        solr.add(dicts)
+        core.add(dicts)
 
-def add_desc(files_path):
-    solr = pysolr.Solr('http://localhost:8983/solr/' + 'gettingstarted_shard1_replica2')
-    with open(files_path, 'rb') as f:
-        id = Random_id.Random_id(files_path, id_list)
-        text = f.readlines()
-        solr.add([{'id': id,
-                   'fields': text
-                }])
+def add_desc(files_path, core):
+	with open(files_path, 'rb') as f:
+		text = f.read().decode('utf-8')
+		core.add([{'id': os.path.abspath(files_path),
+				   'context': text
+				 }])
 
 
 def SearchForFiles(Home_dir,current_path):
@@ -57,18 +51,17 @@ def SearchForFiles(Home_dir,current_path):
         for filename in files:
             files_path=os.path.join(path, filename)
             print files_path
-            postfix = files_path.strip().split('/')[-1].split('.')[-1]
-            id_num = files_path.strip().split('/')[3]
-            print id_num
+            postfix = files.split('.')[-1]
+
             if postfix == 'desc':
-                print files_path
-                add_desc(files_path)
+				core = 'http://localhost:8983/solr/desc'
+                add_desc(files_path, core)
             elif postfix == 'txt':
-                add_txt(files_path)
+				core = 'http://localhost:8983/solr/txt'
+                add_txt(files_path, core)
             elif postfix == 'info':
-                add_txt(files_path)
-            else:
-                continue
+				core = 'http://localhost:8983/solr/info'
+                add_txt(files_path, core)
 
 
 if __name__ == '__main__':
