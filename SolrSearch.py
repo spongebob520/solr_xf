@@ -3,19 +3,19 @@
 
 import pysolr
 
-solr = pysolr.Solr('http://10.20.0.71:8983/solr/' + 'gettingstarted_shard1_replica2')
 
-#'xufei'处的字段为想要查询的内容
-results = solr.search('xufei', **{
-    'rows': 10,
-    'hl': 'true',
-    'hl.simple.pre': '<em class="hlt1">',
-    'hl.simple.post': '</em>',
-    "hl.fl": "article_title",
-})
+def SolrSearch(types, key_word):
+	core = pysolr.Solr('http://10.20.0.71:8983/solr/' + types)
 
-print results.hits
+	#'xufei'处的字段为想要查询的内容
+	results = core.search(key_word.decode('utf-8'), **{
+						  'rows': 10,
+						  'hl': 'true',
+						  'hl.fragsize': 10,
+						  })
 
-print results.docs
+	print results.hits
 
-print results.highlighting
+	print results.docs
+
+	print results.highlighting
