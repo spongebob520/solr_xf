@@ -51,9 +51,8 @@ def add_desc(files_path, core, core_http):
 		text = f.read().decode('utf-8')
 		id_num = id_List.Create_desc_id(files_path)
 		core.add([{'id': id_num,
-				   'path': os.path.abspath(files_path),
-				   'context': text
-				 }])
+                           'path': os.path.abspath(files_path),
+		           'context': text}])
 		id_List.Create_list(files_path, id_num, core_http)
 
 def SearchForFiles(Home_dir):

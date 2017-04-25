@@ -9,7 +9,7 @@ import id_List
 
 def Delete_index():
 	print 'please choose ID NUMBER or ABSOLUTE PATH to delete'
-	print 'input', '\033[1;31;40mid', '\033[0mor', '\033[1;31;40mpath', '\033[0m:'
+	print 'input', '\033[1;31;40mid', '\033[0mor', '\033[1;31;40mpath', '\033[0mor', '\033[1;31;40mall', '\033[0m:'
 	order = raw_input()
 	if order == 'id':
 		'''
@@ -28,7 +28,10 @@ def Delete_index():
 		'''
 	elif order == 'path':
 	# 删除一个文件路径所创建的所有索引，适用于整个文件被删除的情况
-		Check_Exists()	
+		Check_Exists()
+
+	elif order == 'all':
+		Delete.Delete_all()
 
 
 
@@ -59,11 +62,17 @@ def Add():
 	elif os.path.isfile(absolute_path):
 		suffix = absolute_path.split('.')[-1]
 		if suffix == 'desc':
-			CommitDataToSolr.add_desc(absolute_path)
+			core_http = 'http://localhost:8983/solr/desc'
+			core = pysolr.Solr(core_http)
+			CommitDataToSolr.add_desc(absolute_path, core, core_http)
 		elif suffix == 'txt':
-			CommitDataToSolr.add_txt(absolute_path)
+			core_http = 'http://localhost:8983/solr/txt'
+			core = pysolr.Solr(core_http)
+			CommitDataToSolr.add_txt(absolute_path, core, core_http)
 		elif suffix == 'info':
-			CommitDataToSolr.add_info(absolute_path)
+			core_http = 'http://localhost:8983/solr/info'
+			core = pysolr.Solr(core_http)
+			CommitDataToSolr.add_info(absolute_path, core, core_http)
 	else:
 		CommitDataToSolr.SearchForFiles(absolute_path)
 
@@ -71,13 +80,16 @@ def Add():
 def Search():
 	print 'Please input the key words you want to search for:'
 	key_word = raw_input()
-	print 'Please choose desc,txt,info or all to search:\n'
+	print 'Please choose desc,txt,info or all to search:'
 	type = raw_input()
-	if type == 'desc' or 'txt' or 'info':
+	if type in ['desc', 'txt', 'info']:
 		SolrSearch.SolrSearch(type, key_word)
 	elif type == 'all':
+		print '在desc库中查找结果如下：'
 		SolrSearch.SolrSearch('desc', key_word)
+		print '\n在txt库中查找结果如下：'
 		SolrSearch.SolrSearch('txt', key_word)
+		print '\n在info库中查找结果如下：'
 		SolrSearch.SolrSearch('info', key_word)
 	###这里仅实现了对单一关键词的搜索，后期还要加入多个关键词搜索，关键词之间用空格连接
 
