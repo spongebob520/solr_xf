@@ -3,7 +3,7 @@
 import os
 import pysolr
 import id_List
-
+import threadpool
 
 # txt文档为结构化文档，只有两列和四列的区分，当列数为其他情况时候，不做处理
 def add_txt(files_path, core, core_http):
@@ -56,6 +56,8 @@ def add_desc(files_path, core, core_http):
 		id_List.Create_list(files_path, id_num, core_http)
 
 def SearchForFiles(Home_dir):
+    task_pool = threadpool.ThreadPool(3)
+    request_list = []
     for path, folder, files in os.walk(Home_dir):
         for filename in files:
             files_path=os.path.join(path, filename)
@@ -65,16 +67,19 @@ def SearchForFiles(Home_dir):
             if postfix == 'desc':
 				core_http = 'http://localhost:8983/solr/desc' 
 				core = pysolr.Solr(core_http)
-				add_desc(files_path, core, core_http)
+				request_list.append(threadpool.makeRequests(add_desc, [files_path, core, core_http]))
             elif postfix == 'txt':
 				core_http = 'http://localhost:8983/solr/txt'
 				core = pysolr.Solr(core_http)
-				add_txt(files_path, core, core_http)
+				request_list.append(threadpool.makeRequests(add_txt, [files_path, core, core_http]))
             elif postfix == 'info':
 				core_http = 'http://localhost:8983/solr/info'
 				core = pysolr.Solr(core_http)
-				add_info(files_path, core, core_http)
-
+				request_list.append(threadpool.makeRequests(add_info, [files_path, core, core_http]))
+    print '**'
+    print request_list
+    map(task_pool.putRequest, request_list)
+    task_pool.wait()
 
 if __name__ == '__main__':
     # url = 'http://10.20.0.71:8983/solr/gettingstarted/update'
