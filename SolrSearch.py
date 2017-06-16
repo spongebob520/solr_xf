@@ -9,10 +9,9 @@ def SolrSearch(types, key_word):
 
 	#'xufei'处的字段为想要查询的内容
 	results = core.search(key_word.decode('utf-8'), **{
-					      'rows': 10,
-				       	      'hl': 'true',
-					      'hl.fragsize': 10,
-				              })
+					      'hl': 'true',
+				              'hl.fragsize': 10,
+                                              })
 
 	print results.hits
 

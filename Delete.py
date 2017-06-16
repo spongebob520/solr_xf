@@ -8,6 +8,8 @@ def Delete_all():
 	core_txt.delete(q='*:*')
 	core_info = pysolr.Solr('http://localhost:8983/solr/info')
 	core_info.delete(q='*:*')
+	core_all = pysolr.Solr('http://localhost:8983/solr/all')
+	core_all.delete(q='*:*')
 	print 'The index library has been cleaned up !'
 
 def Delete_desc(file_path):

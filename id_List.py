@@ -6,7 +6,7 @@ import hashlib
 # 生成唯一的字符串序列作为info文件和txt文件索引的id序列
 def Create_id():
 	id_num =  str(uuid.uuid1())
-	print id_num
+	# print id_num
 	return id_num
 
 # desc文件的id值

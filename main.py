@@ -1,6 +1,7 @@
 # encoding: utf-8
 import os
 import pysolr
+import xfsolr
 import SolrSearch
 import CommitDataToSolr
 import Delete
@@ -61,18 +62,23 @@ def Add():
 		sys.exit(-1)
 	elif os.path.isfile(absolute_path):
 		suffix = absolute_path.split('.')[-1]
+		total_http = 'http://localhost:8983/solr/all'
+		core_total = pysolr.Solr(total_http)
 		if suffix == 'desc':
 			core_http = 'http://localhost:8983/solr/desc'
 			core = pysolr.Solr(core_http)
 			CommitDataToSolr.add_desc(absolute_path, core, core_http)
+			CommitDataToSolr.add_desc(absolute_path, core_total, total_http)
 		elif suffix == 'txt':
 			core_http = 'http://localhost:8983/solr/txt'
 			core = pysolr.Solr(core_http)
 			CommitDataToSolr.add_txt(absolute_path, core, core_http)
+			CommitDataToSolr.add_txt(absolute_path, core_total, total_http)
 		elif suffix == 'info':
 			core_http = 'http://localhost:8983/solr/info'
 			core = pysolr.Solr(core_http)
 			CommitDataToSolr.add_info(absolute_path, core, core_http)
+			CommitDataToSolr.add_info(absolute_path, core_total, total_http)
 	else:
 		CommitDataToSolr.SearchForFiles(absolute_path)
 
@@ -85,12 +91,15 @@ def Search():
 	if type in ['desc', 'txt', 'info']:
 		SolrSearch.SolrSearch(type, key_word)
 	elif type == 'all':
+		SolrSearch.SolrSearch(type, key_word)
+		'''
 		print '在desc库中查找结果如下：'
 		SolrSearch.SolrSearch('desc', key_word)
 		print '\n在txt库中查找结果如下：'
 		SolrSearch.SolrSearch('txt', key_word)
 		print '\n在info库中查找结果如下：'
 		SolrSearch.SolrSearch('info', key_word)
+		'''
 	###这里仅实现了对单一关键词的搜索，后期还要加入多个关键词搜索，关键词之间用空格连接
 
 
